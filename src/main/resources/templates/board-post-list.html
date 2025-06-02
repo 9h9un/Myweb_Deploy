@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title th:text="${board.name} + ' 글 목록'">게시판 목록</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: auto;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background-color: #2c3e50;
+      color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .nav-links a {
+      margin-left: 16px;
+      color: #ecf0f1;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: #1abc9c;
+      text-decoration: underline;
+    }
+
+    .container-board{
+      max-width: 1200px;     /* 원하는 최대 너비 */
+      margin: 0 auto;    /* 좌우 중앙 정렬 */
+      padding: 20px;
+      background-color: white; /* 원하면 배경색도 넣을 수 있음 */
+    }
+
+    h2 {
+      color: #34495e;
+      margin-bottom: 20px;
+      font-weight: 700;
+      padding-bottom: 8px;
+    }
+
+    .container {
+      max-width: 1200px;  /* 컨텐츠 최대 너비 */
+      margin: 0 auto;    /* 좌우 중앙 정렬 */
+      padding: 20px;
+    }
+
+    .board-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .board-tab a {
+      padding: 10px 18px;
+      background-color: #ecf0f1;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      color: #2c3e50;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .board-tab a:hover {
+      background-color: #d0d7de;
+    }
+
+    .board-tab a.active {
+      background-color: #4a4a4a;
+      color: white;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      overflow: hidden;
+      table-layout: fixed; /* 컬럼 너비 고정 */
+    }
+
+    tbody tr:hover {
+      background-color: #f0f8ff; /* 마우스 오버 시 배경색 변경 (연한 하늘색) */
+      cursor: pointer;           /* 마우스 모양도 바꿔줌 */
+    }
+
+
+    th, td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f0f0f0;
+      color: #2c3e50;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    td a {
+      text-decoration: none;
+      color: #2980b9;
+      font-weight: bold;
+    }
+
+    td a:hover {
+      text-decoration: underline;
+    }
+
+    .write-btn {
+      height: 40px;              /* 탭 버튼 높이와 비슷하게 */
+      line-height: 40px;         /* 텍스트 수직 가운데 정렬 */
+      padding: 0 22px;           /* 상하 패딩 없애고 좌우 패딩 유지 */
+      display: inline-block;
+      background-color: #2980b9;
+      color: white;
+      border-radius: 8px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      vertical-align: middle;
+      margin-top: 30px;
+    }
+
+    .write-btn:hover {
+      background-color: #1f6391;
+    }
+
+  </style>
+</head>
+<body>
+
+<header>
+  <h1 th:onclick="|window.location='/'|">메인 화면</h1>
+  <div class="nav-links">
+    <div th:if="${isLogin}">
+      <span th:text="${username}"></span>님
+      <a th:href="@{/logout}">로그아웃</a>
+      <span th:if="${isAdmin}">
+        | <a th:href="@{/admin}">관리자 페이지</a>
+      </span>
+    </div>
+    <div th:unless="${isLogin}">
+      <a th:href="@{/login}">로그인</a>
+      <a th:href="@{/register}">회원가입</a>
+    </div>
+  </div>
+</header>
+
+<!-- 게시판 목록 -->
+<div class="container-board">
+  <h2 th:text="${board.name} + ' 목록'">게시판 목록</h2>
+  <div class="board-tabs">
+    <div class="board-tab" th:each="board : ${boards}">
+      <a th:href="@{'/boards/' + ${board.id}}" th:text="${board.name}" th:classappend="${board.id} == ${boardId} ? 'active'">게시판 이름</a>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <table>
+    <thead>
+    <tr>
+      <th style="width: 8%; text-align: center;">번호</th>
+      <th style="width: 52%; text-align: center;">제목</th>
+      <th style="width: 20%; text-align: center;">작성자</th>
+      <th style="width: 20%; text-align: center;">작성일</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="post, iterStat : ${posts}">
+      <td style="text-align: center;" th:text="${posts.size() - iterStat.index}">1</td>
+      <td style="text-align: left;">
+        <a th:href="@{/posts/{postId}(postId=${post.id})}" th:text="${post.title}">글 제목</a>
+      </td>
+      <td style="text-align: center;" th:text="${post.author}">작성자명</td>
+      <td style="text-align: center;" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd')}">작성일</td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(posts)}">
+      <td colspan="4" style="text-align:center; padding: 14px; color:#666;">
+        게시글이 없습니다.
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <a class="write-btn" th:href="@{/posts/new(boardId=${boardId})}">글쓰기</a>
+</div>
+
+</body>
+</html>

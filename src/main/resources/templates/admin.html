@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <meta charset="UTF-8" />
+  <title>관리자 페이지</title>
+  <style>
+    /* 기본 스타일 */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* 상단 네비게이션 바 */
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background-color: #1f2d3d;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 30px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+
+    .nav-left h2 {
+      margin: 0;
+      font-weight: 600;
+      font-size: 22px;
+      color: #ffffff;
+    }
+
+    .nav-right {
+      display: flex;
+      gap: 25px;
+      align-items: center;
+    }
+
+    .nav-right a {
+      color: white;
+      font-size: 22px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+
+    .nav-right a:hover {
+      color: #3498db;
+    }
+
+    /* 사이드바 */
+    .sidebar {
+      position: fixed;
+      top: 60px; /* 네비바 아래부터 시작 */
+      left: 0;
+      width: 220px;
+      height: calc(100vh - 60px);
+      background-color: #1f2d3d;
+      color: white;
+      padding: 30px 15px;
+      box-shadow: 2px 0 6px rgba(0,0,0,0.15);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      z-index: 900;
+    }
+
+    .sidebar a {
+      display: block;
+      color: #ecf0f1;
+      padding: 14px 20px;
+      margin-bottom: 14px;
+      border-radius: 6px;
+      font-weight: 500;
+      font-size: 16px;
+      text-decoration: none;
+      transition: background-color 0.3s;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background-color: #34495e;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* 메인 컨텐츠 */
+    .main-content {
+      margin-left: 220px; /* 기존 사이드바 공간 */
+      padding: 100px 30px 40px 30px;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+      background-color: #f5f7fa;
+      box-sizing: border-box;
+    }
+
+    h1, h2 {
+      margin-top: 0;
+      color: #2c3e50;
+    }
+
+    /* 표 스타일 */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      text-align: left;
+      border: 1px solid #e0e0e0;
+    }
+
+    th {
+      background-color: #f0f0f0;
+      color: #2c3e50;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    /* 버튼 */
+    button, select, input[type="text"] {
+      font-family: inherit;
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      margin-top: 4px;
+      font-size: 14px;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .btn-edit {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      transition: background 0.2s;
+    }
+
+    .btn-edit:hover {
+      background-color: #2980b9;
+    }
+
+    .btn-delete {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      margin-left: 5px;
+    }
+
+    .btn-delete:hover {
+      background-color: #c0392b;
+    }
+
+    /* 링크 스타일 */
+    a {
+      color: #3498db;
+      text-decoration: none;
+    }
+
+    /* 폼 관련 */
+    input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* 추가 form 배치 */
+    form table td {
+      padding: 10px;
+    }
+
+    .more-link {
+      color: #888888; /* 회색 */
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .more-link:hover {
+      color: #555555; /* 조금 더 진한 회색으로 호버 효과 */
+      text-decoration: underline;
+    }
+
+    #content-users th,
+    #content-users td {
+      text-align: center;
+      padding: 14px 16px;
+    }
+
+    #content-boards table:first-of-type th,
+    #content-boards table:first-of-type td {
+      text-align: center;
+    }
+
+    .add-link {
+      color: #888888; /* 회색 */
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .add-link:hover {
+      color: #555555; /* 조금 더 진한 회색으로 호버 효과 */
+      text-decoration: underline;
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- 상단 네비게이션 바 -->
+<nav class="top-nav">
+  <div class="nav-left">
+    <h2>관리자 페이지</h2>
+  </div>
+  <div class="nav-right">
+    <a th:href="@{/}" title="홈으로">
+      <i class="fas fa-home"></i>
+    </a>
+    <a th:href="@{/logout}" title="로그아웃">
+      <i class="fas fa-sign-out-alt"></i>
+    </a>
+  </div>
+</nav>
+
+<!-- 사이드바 -->
+<div class="sidebar">
+  <a id="tab-dashboard" class="active" onclick="showTab('dashboard')">대시보드</a>
+  <a id="tab-users" onclick="showTab('users')">회원관리</a>
+  <a id="tab-boards" onclick="showTab('boards')">게시판관리</a>
+</div>
+
+<!-- 메인 컨텐츠 -->
+<div class="main-content">
+
+  <!--  대시 보드 섹션 -->
+  <div id="content-dashboard" style="display:none;">
+
+    <h1 th:text="${username} + '님, 환영합니다.'"></h1>
+    <hr/>
+
+    <h2>대시보드</h2>
+    <div style="display: flex; gap: 40px; width:100%">
+      <!-- 회원 목록 일부 -->
+      <div style="width:50%;">
+        <h3>회원 목록</h3>
+        <table>
+          <tr><th>번호</th><th>아이디</th><th>권한</th></tr>
+          <!-- users 리스트에서 3명까지만 반복 출력 -->
+          <tr th:each="user, iterStat : ${users}" th:if="${iterStat.index < 5}">
+            <td th:text="${iterStat.index + 1}"></td>
+            <td th:text="${user.username}"></td>
+            <td th:text="${user.role}"></td>
+          </tr>
+        </table>
+        <!-- 더보기 누르면 회원관리 탭으로 이동하는 링크 -->
+        <a href="#" class="more-link" onclick="showTab('users'); return false;">+ 더보기</a>
+      </div>
+
+      <!-- 게시판 목록 일부 -->
+      <div style="width:50%;">
+        <h3>게시판 목록</h3>
+        <table>
+          <tr><th>번호</th><th>이름</th><th>설명</th></tr>
+          <!-- boards 리스트에서 3개까지만 반복 출력 -->
+          <tr th:each="board, iterStat : ${boards}" th:if="${iterStat.index < 5}">
+            <td th:text="${iterStat.index + 1}"></td>
+            <td th:text="${board.name}"></td>
+            <td th:text="${board.description}"></td>
+          </tr>
+        </table>
+        <!-- 더보기 누르면 게시판관리 탭으로 이동하는 링크 -->
+        <a href="#" class="more-link" onclick="showTab('boards'); return false;">+ 더보기</a>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- 회원관리 섹션 -->
+  <div id="content-users" style="display:none;">
+
+    <h1 th:text="${username} + '님, 환영합니다.'"></h1>
+    <hr/>
+
+    <h2>회원 목록</h2>
+    <table>
+      <tr>
+        <th>번호</th>
+        <th>아이디</th>
+        <th>권한</th>
+        <th>작업</th>
+      </tr>
+      <tr th:each="user, iterStat : ${users}">
+        <td th:text="${iterStat.index + 1}"></td>
+        <td th:text="${user.username}"></td>
+        <td>
+          <!-- 회원 권한 변경 폼 -->
+          <form th:action="@{/admin/users/update}" method="post" style="display:inline;">
+            <input type="hidden" name="username" th:value="${user.username}" />
+            <select name="role">
+              <option th:selected="${user.role == '일반회원'}" value="일반회원">일반회원</option>
+              <option th:selected="${user.role == '관리자'}" value="관리자">관리자</option>
+              <option th:selected="${user.role == '손님'}" value="손님">손님</option>
+            </select>
+        </td>
+        <td>
+          <button type="submit" class="btn-edit">수정</button>
+          </form>
+
+          <form th:action="@{/admin/users/delete/{username}(username=${user.username})}" method="get" style="display:inline;" onsubmit="return confirm('삭제하시겠습니까?');">
+            <input type="hidden" name="username" th:value="${user.username}" />
+            <button type="submit" class="btn-delete">삭제</button>
+          </form>
+
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- 게시판관리 섹션 -->
+  <div id="content-boards" style="display:none;">
+
+    <h1 th:text="${username} + '님, 환영합니다.'"></h1>
+    <hr/>
+
+    <h2>게시판 관리</h2>
+    <div style="display: flex; gap: 40px;">
+      <!-- 좌측: 게시판 목록 -->
+      <div style="flex: 1;">
+        <h3>게시판 목록</h3>
+        <table style="text-align: center;">
+          <thead>
+          <tr>
+            <th>이름</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="board : ${boards}">
+            <td th:text="${board.name}"></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 우측: 게시판 상세 (이름 + 설명) -->
+      <div style="flex: 2;">
+        <h3>게시판 상세</h3>
+        <table>
+          <thead>
+          <tr>
+            <th>이름</th>
+            <th>설명</th>
+            <th>작업</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="board : ${boards}">
+            <td>
+              <!-- 게시판 이름 변경 폼 -->
+              <form th:action="@{/admin/boards/update}" method="post" style="display:inline;">
+                <input type="hidden" name="id" th:value="${board.id}" />
+                <input type="text" name="name" th:value="${board.name}" required />
+            </td>
+            <td>
+              <input type="text" name="description" th:value="${board.description}" />
+            </td>
+            <td style="display: flex; gap: 8px;">
+              <button type="submit" class="btn-edit">수정</button>
+              </form>
+              <form th:action="@{/admin/boards/delete/{id}(id=${board.id})}" method="get" onsubmit="return confirm('삭제하시겠습니까?');" style="display:inline; margin: 0;">
+                <button type="submit" class="btn-delete">삭제</button>
+              </form>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+
+        <!-- 게시판 추가 버튼 클릭 시 모달 열기 -->
+        <a href="#" class="add-link" onclick="openAddBoardModal(); return false;">+ 추가</a>
+        <!-- 게시판 추가 모달 (초기엔 숨김) -->
+        <div id="addBoardModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color: rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index: 1500;">
+          <!-- 모달 박스 -->
+          <div style="background:white; padding: 20px; width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative;">
+            <h3>새 게시판 추가</h3>
+            <form th:action="@{/admin/boards/add}" method="post" id="addBoardForm" style="display: flex; flex-direction: column; gap: 12px;">
+              <input type="text" name="name" placeholder="게시판 이름" required />
+              <input type="text" name="description" placeholder="게시판 설명" />
+              <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                <button type="button" id="closeAddBoardBtn" class="btn-delete">취소</button>
+                <button type="submit" class="btn-edit">추가</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 탭 전환 함수
+  function showTab(tab) {
+    const usersTab = document.getElementById('tab-users');
+    const boardsTab = document.getElementById('tab-boards');
+    const dashboardTab = document.getElementById('tab-dashboard');
+
+    const usersContent = document.getElementById('content-users');
+    const boardsContent = document.getElementById('content-boards');
+    const dashboardContent = document.getElementById('content-dashboard');
+
+    // 모든 컨텐츠 숨기기
+    usersContent.style.display = 'none';
+    boardsContent.style.display = 'none';
+    dashboardContent.style.display = 'none';
+
+    // 모든 탭에서 active 클래스 제거
+    usersTab.classList.remove('active');
+    boardsTab.classList.remove('active');
+    dashboardTab.classList.remove('active');
+
+    // 선택된 탭과 컨텐츠 보여주기
+    if(tab === 'users') {
+      usersContent.style.display = 'block';
+      usersTab.classList.add('active');
+    } else if(tab === 'boards') {
+      boardsContent.style.display = 'block';
+      boardsTab.classList.add('active');
+    } else if(tab === 'dashboard') {
+      dashboardContent.style.display = 'block';
+      dashboardTab.classList.add('active');
+    }
+  }
+
+  // 페이지가 로드되면 기본적으로 '대시보드' 탭을 보여주기
+  window.onload = function() {
+    showTab('dashboard');
+  }
+
+  // 게시판 추가 모달 열기
+  function openAddBoardModal() {
+    const modal = document.getElementById('addBoardModal');
+    if (modal) {
+      modal.style.display = 'flex';
+    }
+  }
+
+  // 모달 요소와 닫기 버튼 가져오기
+  const modal = document.getElementById('addBoardModal');
+  const closeBtn = document.getElementById('closeAddBoardBtn');
+
+  // 닫기 버튼 클릭 시 모달 숨기기
+  closeBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  // 모달 바깥 영역 클릭 시 모달 숨기기 (사용자 경험 향상)
+  window.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+
+
+
+</script>
+
+</body>
+</html>

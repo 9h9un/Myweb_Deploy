@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>메인 화면</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: auto;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;     /* 원하는 최대 너비 */
+      margin: 0 auto;    /* 좌우 중앙 정렬 */
+      padding: 20px;
+      background-color: white; /* 원하면 배경색도 넣을 수 있음 */
+    }
+
+    /* 상단 네비게이션 바 스타일 */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background-color: #2c3e50;
+      color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-section span {
+      white-space: nowrap;
+    }
+
+    .nav-links a {
+      margin-left: 8px;
+      color: #ecf0f1;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: #1abc9c;
+      text-decoration: underline;
+    }
+
+
+    h2 {
+      color: #34495e;
+      margin-bottom: 20px;
+      font-weight: 700;
+      padding-bottom: 8px;
+    }
+
+    .board-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .board-tab a {
+      padding: 10px 18px;
+      background-color: #ecf0f1;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      color: #2c3e50;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .board-tab a:hover {
+      background-color: #d0d7de;
+    }
+
+    .board-description {
+      font-size: 14px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .board-preview-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      margin-top: 30px;
+      max-width: 1200px;     /* 원하는 최대 너비 */
+      margin: 0 auto;    /* 좌우 중앙 정렬 */
+    }
+
+    .board-preview-card {
+      width: calc(50% - 12px); /* 50% 너비에서 gap 절반만큼 빼서 2열 배치 */
+      box-sizing: border-box;  /* padding, border 포함 너비 계산 */
+      border: 1px solid #e1e4e8;
+      padding: 16px;
+      background-color: #ffffff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .board-preview-card h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #2c3e50;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #ddd; /* 구분선 추가 */
+    }
+
+    .post-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .post-title {
+      font-size: 15px;
+      color: #34495e;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 70%;
+    }
+
+    .post-title a {
+      color: #34495e;
+      text-decoration: none;
+      display: inline-block; /* 좀 더 안정적인 hover 적용 */
+      max-width: 100%;       /* 줄임 표시랑 같이 */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      transition: color 0.3s, text-decoration 0.3s;
+    }
+
+    .post-title a:hover {
+      color: #1abc9c;        /* 원하는 호버 색상 */
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .post-author {
+      font-size: 15px;
+      color: #34495e;
+      white-space: nowrap;
+    }
+
+    .post-preview p {
+      font-size: 15px;       /* 게시글 글자 크기와 동일하게 */
+      color: #34495e;           /* 작성자 색상과 맞추기 */
+      margin: 0;             /* 기본 p 태그 마진 제거 */
+    }
+
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>메인 화면</h1>
+
+  <div class="nav-links">
+    <div th:if="${isLogin}" class="nav-section">
+      <span th:text="${username + '님'}"></span>
+      <a th:href="@{/logout}">로그아웃</a>
+      <span th:if="${isAdmin}">
+      <a th:href="@{/admin}">관리자 페이지</a>
+    </span>
+    </div>
+
+    <div th:unless="${isLogin}" class="nav-section">
+      <a th:href="@{/login}">로그인</a>
+      <a th:href="@{/register}">회원가입</a>
+    </div>
+  </div>
+
+</header>
+
+<div class="container">
+  <h2>게시판</h2>
+  <div class="board-tabs">
+    <div class="board-tab" th:each="board : ${boards}">
+      <a th:href="@{'/boards/' + ${board.id}}" th:text="${board.name}">게시판 이름</a>
+    </div>
+  </div>
+</div>
+
+<div class="board-preview-container">
+  <div class="board-preview-card" th:each="board : ${boards}">
+    <h3 th:text="${board.name}">게시판</h3>
+    <div class="post-preview" th:if="${#lists.isEmpty(board.recentPosts)}">
+      <p>작성된 게시글이 없습니다.</p>
+    </div>
+    <div class="post-preview" th:unless="${#lists.isEmpty(board.recentPosts)}" th:each="post : ${board.recentPosts}">
+      <div class="post-row">
+        <span class="post-title">
+          <a th:href="@{'/posts/' + ${post.id}}" th:text="${post.title}"></a>
+        </span>
+        <span class="post-author" th:text="${post.author}">작성자</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
